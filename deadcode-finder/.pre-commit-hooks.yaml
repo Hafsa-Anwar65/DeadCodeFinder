@@ -1,0 +1,15 @@
+- id: deadcode-finder
+  name: deadcode-finder (report dead code)
+  entry: deadcode-finder
+  language: python
+  types: [python]
+  pass_filenames: false
+  args: ["."]
+
+- id: deadcode-finder-fix
+  name: deadcode-finder (remove unused imports)
+  entry: deadcode-finder --fix --only unused-import
+  language: python
+  types: [python]
+  pass_filenames: false
+  args: ["."]

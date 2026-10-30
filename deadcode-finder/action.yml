@@ -1,0 +1,48 @@
+name: "deadcode-finder"
+description: "Find unused imports, functions, classes, variables and unreachable Python code, with inline PR annotations."
+author: "Hafsa Anwar"
+branding:
+  icon: "scissors"
+  color: "orange"
+
+inputs:
+  paths:
+    description: "Space-separated files or folders to scan"
+    required: false
+    default: "."
+  min-confidence:
+    description: "Hide findings below this confidence (0-100)"
+    required: false
+    default: "60"
+  fail-on-findings:
+    description: "Fail the job when dead code is found (true/false)"
+    required: false
+    default: "true"
+  args:
+    description: "Extra CLI arguments, e.g. --exclude migrations --only unused-import"
+    required: false
+    default: ""
+  html-report:
+    description: "Path to also write an HTML report (upload it with actions/upload-artifact)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install deadcode-finder
+      shell: bash
+      run: pip install --quiet "${{ github.action_path }}"
+    - name: Scan for dead code
+      shell: bash
+      run: |
+        EXTRA=""
+        if [ "${{ inputs.fail-on-findings }}" != "true" ]; then EXTRA="--exit-zero"; fi
+        if [ -n "${{ inputs.html-report }}" ]; then
+          deadcode-finder ${{ inputs.paths }} -c ${{ inputs.min-confidence }} ${{ inputs.args }} \
+            -f html -o "${{ inputs.html-report }}" --exit-zero
+        fi
+        deadcode-finder ${{ inputs.paths }} -c ${{ inputs.min-confidence }} ${{ inputs.args }} -f github $EXTRA
